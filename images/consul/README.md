@@ -1,0 +1,1 @@
+The directories `v1` and `v2` represents the history of the consul image repository. To make them as simple as possible their content are identical with exception of the `install_consul.sh` script that uses a different consul release version (0.6.2 in v1 and 0.6.3 in v2).

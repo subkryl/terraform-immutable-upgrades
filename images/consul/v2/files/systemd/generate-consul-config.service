@@ -1,0 +1,10 @@
+[Unit]
+Description=Generate consul config
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/consul-config.sh
+

@@ -1,0 +1,18 @@
+
+- hosts: all
+  remote_user: fedora
+  become_user: root
+  gather_facts: false
+  tasks:
+   - name: Check for 3 active consul servers
+     shell: /usr/local/bin/consul members | grep alive | grep server | wc -l
+     register: result
+     until: result.stdout.find("3") != -1
+     retries: 5
+     delay: 10
+
+   - name: Fail if we cannot find 3 active consul server
+     fail:
+       msg: "Only {{ result.stdout }} consul servers active"
+     when: result.stdout.find("3") == -1
+

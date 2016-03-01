@@ -1,0 +1,3 @@
+CONSUL_AMI_ID= # Put here the ami id reported at the end of the build of `images/consul/v2`
+
+PREV_VERSION="v1"

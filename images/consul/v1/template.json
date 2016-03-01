@@ -1,0 +1,56 @@
+{
+	"variables": {
+		"access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+		"secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+		"region": "{{env `AWS_DEFAULT_REGION`}}"
+	},
+	"builders": [{
+		"type": "amazon-ebs",
+		"access_key": "{{user `access_key`}}",
+		"secret_key": "{{user `secret_key`}}",
+		"region": "{{user `region`}}",
+		"source_ami": "ami-518bfb3b",
+		"instance_type": "t2.micro",
+		"ssh_username": "fedora",
+		"ami_name": "consul ami {{timestamp}}",
+		"tags": {
+			"test": ""
+		}
+	}],
+	"provisioners": [
+		{
+			"type": "shell",
+			"execute_command": "{{ .Vars }} sudo -E sh '{{ .Path }}'",
+			"scripts": [
+				"./scripts/base.sh",
+				"./scripts/disable_selinux.sh",
+				"./scripts/update.sh",
+				"./scripts/install_awscli.sh",
+				"./scripts/install_consul.sh",
+				"./scripts/configure_network.sh",
+				"./scripts/configure_dnsmasq.sh"
+			]
+		},
+		{
+			"type": "shell",
+			"execute_command": "{{ .Vars }} sudo -E sh '{{ .Path }}'",
+			"scripts": [
+				"./scripts/prepare_staging.sh"
+			]
+		},
+		{
+			"type": "file",
+			"source": "files/",
+			"destination": "/tmp/packer/files/"
+		},
+		{
+			"type": "shell",
+			"execute_command": "{{ .Vars }} sudo -E sh '{{ .Path }}'",
+			"scripts": [
+				"./scripts/copy_files.sh",
+				"./scripts/enable_services.sh"
+			]
+		}
+
+	]
+}

@@ -1,0 +1,9 @@
+
+- hosts: all
+  remote_user: fedora
+  become_user: root
+  gather_facts: false
+  tasks:
+   - name: waiting for server to become reachable via ssh
+     local_action: wait_for host={{ inventory_hostname }} port=22 state=started timeout=300
+     become: false

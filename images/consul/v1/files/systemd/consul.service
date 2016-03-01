@@ -1,0 +1,20 @@
+[Unit]
+Description=consul agent
+Requires=network-online.target
+Requires=mnt-data.mount
+Requires=generate-consul-config.service
+After=network-online.target
+After=mnt-data.mount
+After=generate-consul-config.service
+
+[Service]
+Environment=GOMAXPROCS=2
+Restart=on-failure
+ExecStartPre=/usr/bin/mkdir -p /mnt/data/consul
+ExecStart=/usr/local/bin/consul agent -data-dir=/mnt/data/consul -config-dir=/etc/consul.d -ui
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
+
