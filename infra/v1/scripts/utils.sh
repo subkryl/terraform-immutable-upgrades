@@ -25,13 +25,13 @@ function tf_get_instance_id() {
 }
 
 function tf_get_instance_public_ip() {
-	local tfstatefile=${1}
-	local instance=${2}
+	# local tfstatefile=${1}
+	local instance=${1}
 	local ip
-	ip=$(cat ${tfstatefile} | jq -e -r -M '.modules[0].resources."aws_instance.'"${instance}"'".primary.attributes.public_ip')
+	ip=$(echo ${TFSTATE} | jq -e -r -M '.modules[0].resources."aws_instance.'"${instance}"'".primary.attributes.public_ip')
 	if [ $? -ne 0 ]; then
 		# if someone has tainted the resource try with tainted instead of primary
-		ip=$(cat ${tfstatefile} | jq -e -r -M '.modules[0].resources."aws_instance.'"${instance}"'".tainted[0].attributes.public_ip')
+		ip=$(echo ${TFSTATE} | jq -e -r -M '.modules[0].resources."aws_instance.'"${instance}"'".tainted[0].attributes.public_ip')
 		if [ $? -ne 0 ]; then
 			echo ""
 			return
@@ -43,7 +43,7 @@ function tf_get_instance_public_ip() {
 function tf_get_all_instance_ids() {
 	local tfstatefile=${1}
 	local ids
-	ids=$(cat ${tfstatefile} | jq -c -e -r -M '.modules[0].resources | to_entries | map(select(.key | test("aws_instance\\..*"))) | map(.value.primary.id)')
+	ids=$(echo ${TFSTATE} | jq -c -e -r -M '.modules[0].resources | to_entries | map(select(.key | test("aws_instance\\..*"))) | map(.value.primary.id)')
 	if [ $? -ne 0 ]; then
 		echo ""
 		return
@@ -54,7 +54,7 @@ function tf_get_all_instance_ids() {
 function tf_get_all_instance_public_ips() {
 	local tfstatefile=${1}
 	local ids
-	ids=$(cat ${tfstatefile} | jq -c -e -r -M '.modules[0].resources | to_entries | map(select(.key | test("aws_instance\\..*"))) | map(.value.primary.attributes.public_ip)')
+	ids=$(echo ${tfstatefile} | jq -c -e -r -M '.modules[0].resources | to_entries | map(select(.key | test("aws_instance\\..*"))) | map(.value.primary.attributes.public_ip)')
 	if [ $? -ne 0 ]; then
 		echo ""
 		return

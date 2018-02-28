@@ -25,7 +25,10 @@ case ${1} in
 	"test-upgrade")
 		${__root}/scripts/test_upgrade.sh
 		;;
+	"debug")
+		/bin/bash
+		;;
 	*)
-		error "Usage: ${0} {create|upgrade|destroy|test-create|test-upgrade}"
+		error "Usage: ${0} {create|upgrade|destroy|test-create|test-upgrade|debug}"
 esac
 

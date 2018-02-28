@@ -7,3 +7,8 @@ Session.vim
 .terraform
 terraform.tfstate*
 build.log
+
+**/*.tar.7z
+infra/v?/terraform
+**/.env_vars
+**/osc_config.tf

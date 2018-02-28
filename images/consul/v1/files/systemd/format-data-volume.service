@@ -1,10 +1,9 @@
 [Unit]
 Description=Format EBS volume if needed
+# ConditionFirstBoot=yes
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/bin/bash -c \
-'(/usr/sbin/blkid /dev/xvdb) || \
-(/usr/sbin/wipefs -fa /dev/xvdb && /usr/sbin/mkfs.ext4 /dev/xvdb)'
-
+ExecStart=/usr/local/bin/format_EBS.sh
+TimeoutStartSec=60

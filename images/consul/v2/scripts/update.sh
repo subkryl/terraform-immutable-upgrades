@@ -3,4 +3,4 @@
 set -x
 set -e
 
-dnf -y update
+apt-get update

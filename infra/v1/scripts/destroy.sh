@@ -30,10 +30,15 @@ export TF_VAR_consul_ami="IDONTCARE"
 
 # Remove local cached terraform.tfstate file. This is to avoid having a cached state file referencing another environment due to manual tests or wrong operations.
 rm -f ${TFSTATE_FILE}
-terraform remote config -backend=s3 --backend-config="bucket=${S3_BUCKET}" --backend-config="key=$TFSTATE_KEY" --backend-config="region=${AWS_DEFAULT_REGION}"
+# terraform remote config -backend=s3 --backend-config="bucket=${S3_BUCKET}" --backend-config="key=$TFSTATE_KEY" --backend-config="region=${AWS_DEFAULT_REGION}"
+terraform init -backend=true --backend-config="bucket=${S3_BUCKET}" --backend-config="key=${TFSTATE_KEY}" --backend-config="region=${AWS_DEFAULT_REGION}"
+
+# get states
+# terraform output -json instance_ids
+export TFSTATE=$(terraform state pull)
 
 # shutdown instance before doing terraform apply or it will fail to remove the aws_volume_attachment since it's mounted. See also https://github.com/hashicorp/terraform/issues/2957
-INSTANCE_IDS=$(tf_get_all_instance_ids ${TFSTATE_FILE})
+INSTANCE_IDS=$(tf_get_all_instance_ids ${TFSTATE})
 if [ ${INSTANCE_IDS} != "[]" ]; then
 	aws ec2 stop-instances --instance-ids ${INSTANCE_IDS}
 	aws ec2 wait instance-stopped --instance-ids ${INSTANCE_IDS} || error "some instance are not stopped"

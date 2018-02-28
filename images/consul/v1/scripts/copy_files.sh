@@ -5,12 +5,12 @@ set -e
 
 STAGING_DIR="/tmp/packer/files/"
 mkdir -p ${STAGING_DIR}
-chown -R fedora:fedora ${STAGING_DIR}
+chown -R admin:admin ${STAGING_DIR}
 
 chown root:root ${STAGING_DIR}/systemd/*
-chown root:root ${STAGING_DIR}/bin/*
-chmod +x ${STAGING_DIR}/bin/*
+chown root:root ${STAGING_DIR}/_scripts/*
+chmod +x ${STAGING_DIR}/_scripts/*
 
 cp ${STAGING_DIR}/systemd/* /etc/systemd/system/
-cp ${STAGING_DIR}/bin/* /usr/local/bin
+cp ${STAGING_DIR}/_scripts/* /usr/local/bin
 

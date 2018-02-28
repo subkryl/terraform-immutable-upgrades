@@ -1,3 +1,17 @@
+terraform {
+  required_version  = ">= 0.10.8"
+
+  variable "s3_bucket" {}
+  variable "tfstate_key" {}
+
+  # backend fix
+  backend "s3" {
+    # bucket = "${var.s3_bucket}"
+    # key    = "${var.tfstate_key}"
+    # region = "${var.region}"
+}
+}
+
 variable "access_key" {}
 variable "secret_key" {}
 
@@ -14,6 +28,7 @@ variable "azs" {
 }
 
 provider "aws" {
+    version = "~> 1.9"
     access_key = "${var.access_key}"
     secret_key = "${var.secret_key}"
     region = "${var.region}"
@@ -43,14 +58,14 @@ resource "aws_internet_gateway" "igw" {
 
 # Create a subnet for every availability zone
 resource "aws_subnet" "front" {
-    count = "${length(split(\",\", var.azs))}"
+    count = "${length(split(",", var.azs))}"
     vpc_id = "${aws_vpc.vpc.id}"
     cidr_block = "10.0.${count.index * 16}.0/20"
     map_public_ip_on_launch = true
-    availability_zone = "${element(split(\",\", var.azs), count.index)}"
+    availability_zone = "${element(split(",", var.azs), count.index)}"
 
     tags {
-        Name = "subnet ${count.index} ${element(split(\",\", var.azs), count.index)}"
+        Name = "subnet ${count.index} ${element(split(",", var.azs), count.index)}"
     }
 }
 
@@ -67,7 +82,7 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table_association" "front" {
-    count = "${length(split(\",\", var.azs))}"
+    count = "${length(split(",", var.azs))}"
     subnet_id = "${element(aws_subnet.front.*.id, count.index)}"
     route_table_id = "${aws_route_table.public.id}"
 }
@@ -144,7 +159,7 @@ resource "aws_ebs_volume" "consul_server03_ebs" {
 resource "aws_instance" "consul_server01" {
     ami = "${var.consul_ami}"
     instance_type = "t2.micro"
-    iam_instance_profile = "default_instance_profile"
+    iam_instance_profile = "ec2-role"
     key_name = "${var.ssh_keypair}"
     subnet_id = "${aws_subnet.front.0.id}"
     vpc_security_group_ids = ["${aws_security_group.allow_all.id}"]
@@ -157,7 +172,7 @@ resource "aws_instance" "consul_server01" {
 resource "aws_instance" "consul_server02" {
     ami = "${var.consul_ami}"
     instance_type = "t2.micro"
-    iam_instance_profile = "default_instance_profile"
+    iam_instance_profile = "ec2-role"
     key_name = "${var.ssh_keypair}"
     subnet_id = "${aws_subnet.front.1.id}"
     vpc_security_group_ids = ["${aws_security_group.allow_all.id}"]
@@ -170,7 +185,7 @@ resource "aws_instance" "consul_server02" {
 resource "aws_instance" "consul_server03" {
     ami = "${var.consul_ami}"
     instance_type = "t2.micro"
-    iam_instance_profile = "default_instance_profile"
+    iam_instance_profile = "ec2-role"
     key_name = "${var.ssh_keypair}"
     subnet_id = "${aws_subnet.front.2.id}"
     vpc_security_group_ids = ["${aws_security_group.allow_all.id}"]
@@ -187,13 +202,17 @@ output region {
 }
 
 output vpc_id {
-        value = "${aws_vpc.vpc.id}"
+    value = "${aws_vpc.vpc.id}"
 }
 
 output security_group_allow_all_id {
-        value = "${aws_security_group.allow_all.id}"
+    value = "${aws_security_group.allow_all.id}"
 }
 
 output subnets {
-        value = "${join(",", aws_subnet.front.*.id)}"
+    value = "${join(",", aws_subnet.front.*.id)}"
 }
+
+# output "instance_ids" {
+#   value = ["${aws_instance.consul_server03.primary.id}"]
+# }

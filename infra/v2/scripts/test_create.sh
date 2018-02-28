@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x
 set -e
 
 __dir="$(readlink -f $(dirname ${0}))"
@@ -10,6 +9,7 @@ __ansible="${__root}/ansible"
 source ${__dir}/utils.sh
 
 function cleanup() {
+    echo "w00ps / exiting"
 	${__dir}/destroy.sh
 	delete_s3_object ${S3_BUCKET} ${TFSTATE_KEY}
 }

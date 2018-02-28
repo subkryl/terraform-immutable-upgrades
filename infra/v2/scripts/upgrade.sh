@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x
 set -e
 
 __dir="$(readlink -f $(dirname ${0}))"
@@ -34,23 +33,27 @@ pushd ${__root}
 
 # Remove local cached terraform.tfstate file. This is to avoid having a cached state file referencing another environment due to manual tests or wrong operations.
 rm -f ${TFSTATE_FILE}
-terraform remote config -backend=s3 --backend-config="bucket=${S3_BUCKET}" --backend-config="key=$TFSTATE_KEY" --backend-config="region=${AWS_DEFAULT_REGION}"
+TF_LOG=trace TF_LOG_PATH=init.log terraform init -backend=true --backend-config="bucket=${S3_BUCKET}" --backend-config="key=${TFSTATE_KEY}" --backend-config="region=${AWS_DEFAULT_REGION}"
+
+# get states
+# terraform output -json instance_ids
+export TFSTATE=$(terraform state pull)
 
 # Consul server upgrade
 # Test all consul servers are active. Check this using the first consul server.
-consul01ip=$(tf_get_instance_public_ip ${TFSTATE_FILE} "consul_server01")
+consul01ip=$(tf_get_instance_public_ip "consul_server01")
 ansible-playbook -i ${consul01ip}, ${__ansible}/test_consul_servers_active.yml
 
 ## Rolling upgrade of consul server
 for id in 01 02 03; do
-	INSTANCE_ID=$(tf_get_instance_id ${TFSTATE_FILE} "consul_server${id}")
+	INSTANCE_ID=$(tf_get_instance_id "consul_server${id}")
 	if [ -z ${INSTANCE_ID} ]; then
 		error "empty instance id"
 	fi
 
 	# check for changes
 	set +e
-	terraform plan -detailed-exitcode -input=false -var "env=$ENV" -target aws_instance.consul_server${id} -target aws_volume_attachment.consul_server${id}_ebs_attachment
+	TF_LOG=trace TF_LOG_PATH=plan.log terraform plan -detailed-exitcode -input=false -var "env=$ENV" -target aws_instance.consul_server${id} -target aws_volume_attachment.consul_server${id}_ebs_attachment
 	if [ $? -eq 0 ]; then
 		echo "no changes for instance ${instance}"
 		continue
@@ -62,16 +65,19 @@ for id in 01 02 03; do
 	aws ec2 wait instance-stopped --instance-ids ${INSTANCE_ID} || error "instance ${INSTANCE_ID} is not stopped"
 
 	# recreate instance
-	terraform apply -input=false -var "env=$ENV" -target aws_instance.consul_server${id} -target aws_volume_attachment.consul_server${id}_ebs_attachment
+	TF_LOG=trace TF_LOG_PATH=apply.log terraform apply -input=false -auto-approve -var "env=$ENV" -target aws_instance.consul_server${id} -target aws_volume_attachment.consul_server${id}_ebs_attachment
+
+	# refresh TFSTATE
+	export TFSTATE=$(terraform state pull)
 
 	# Get the new instance id
-	INSTANCE_ID=$(tf_get_instance_id ${TFSTATE_FILE} consul_server${id})
+	INSTANCE_ID=$(tf_get_instance_id consul_server${id})
 	if [ -z ${INSTANCE_ID} ]; then
 		error "empty instance id"
 	fi
 	aws ec2 wait instance-running --instance-ids ${INSTANCE_ID} || error "instance ${INSTANCE_ID} not running"
 
-	INSTANCE_PUBLIC_IP=$(tf_get_instance_public_ip ${TFSTATE_FILE} consul_server${id})
+	INSTANCE_PUBLIC_IP=$(tf_get_instance_public_ip consul_server${id})
 	# Wait for the consul server instance being reachable via ssh
 	ansible-playbook -i ${INSTANCE_PUBLIC_IP}, ${__ansible}/wait_instance_up.yml
 
@@ -85,7 +91,7 @@ done
 # If there're some changes left behind, then we forgot to do something.
 echo "Checking that no changes were left behind"
 set +e
-terraform plan -detailed-exitcode -input=false -var "env=$ENV"
+TF_LOG=trace TF_LOG_PATH=plan.log terraform plan -detailed-exitcode -input=false -var "env=$ENV"
 ret=$?
 if [ ${ret} -eq 1 ]; then
 	error "terraform plan error!"

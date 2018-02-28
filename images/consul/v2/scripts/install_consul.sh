@@ -5,7 +5,7 @@ set -e
 
 echo "Fetching Consul..."
 cd /tmp
-wget https://releases.hashicorp.com/consul/0.6.3/consul_0.6.3_linux_amd64.zip -O consul.zip
+wget https://releases.hashicorp.com/consul/1.0.5/consul_1.0.5_linux_amd64.zip -O consul.zip
 
 echo "Installing Consul..."
 unzip consul.zip >/dev/null

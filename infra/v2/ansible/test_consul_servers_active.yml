@@ -1,6 +1,6 @@
 
 - hosts: all
-  remote_user: fedora
+  remote_user: admin
   become_user: root
   gather_facts: false
   tasks:

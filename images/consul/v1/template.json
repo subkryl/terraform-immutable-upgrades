@@ -9,9 +9,9 @@
 		"access_key": "{{user `access_key`}}",
 		"secret_key": "{{user `secret_key`}}",
 		"region": "{{user `region`}}",
-		"source_ami": "ami-518bfb3b",
+		"source_ami": "ami-628ad918",
 		"instance_type": "t2.micro",
-		"ssh_username": "fedora",
+		"ssh_username": "admin",
 		"ami_name": "consul ami {{timestamp}}",
 		"tags": {
 			"test": ""
@@ -22,9 +22,8 @@
 			"type": "shell",
 			"execute_command": "{{ .Vars }} sudo -E sh '{{ .Path }}'",
 			"scripts": [
-				"./scripts/base.sh",
-				"./scripts/disable_selinux.sh",
 				"./scripts/update.sh",
+				"./scripts/base.sh",
 				"./scripts/install_awscli.sh",
 				"./scripts/install_consul.sh",
 				"./scripts/configure_network.sh",

@@ -9,4 +9,4 @@ __root="$(readlink -f ${__dir}/../)"
 
 TFSTATE_FILE="${__root}/.terraform/terraform.tfstate"
 
-cat ${TFSTATE_FILE} | jq -c -e -r -M '{ all: .modules[0].resources | to_entries | map(select(.key | test("aws_instance\\..*"))) | map(.value.primary.attributes.public_ip) }'
+echo ${TFSTATE} | jq -c -e -r -M '{ all: .modules[0].resources | to_entries | map(select(.key | test("aws_instance\\..*"))) | map(.value.primary.attributes.public_ip) }'
