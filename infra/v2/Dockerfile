@@ -19,6 +19,5 @@ WORKDIR /deploy
 ADD main.tf config ./
 ADD scripts scripts/
 ADD ansible ansible/
-# ADD terraform .terraform
 
 ENTRYPOINT [ "/deploy/scripts/run.sh" ]

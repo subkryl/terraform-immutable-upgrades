@@ -1,8 +1,8 @@
 #/bin/bash
 set -ex
 
-ENV_FILE=".env_vars"
-if [[ -z "${ENV_FILE}" ]]; then
+ENV_FILE="./.env_vars"
+if [ ! -e "${ENV_FILE}" ]; then
     echo "cp ENV_VARS --> ${ENV_FILE} && EDIT THE RIGHT VALUES"
     exit 1
 fi

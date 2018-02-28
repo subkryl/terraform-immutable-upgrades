@@ -1,1 +1,2 @@
-CONSUL_AMI_ID= # Put here the ami id reported at the end of the build of `images/consul/v1`
+# Put here the ami id reported at the end of the build of `images/consul/v1`
+CONSUL_AMI_ID=ami-6bf50016

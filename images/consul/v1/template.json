@@ -9,7 +9,7 @@
 		"access_key": "{{user `access_key`}}",
 		"secret_key": "{{user `secret_key`}}",
 		"region": "{{user `region`}}",
-		"source_ami": "ami-628ad918",
+		"source_ami": "ami-0dc82b70",
 		"instance_type": "t2.micro",
 		"ssh_username": "admin",
 		"ami_name": "consul ami {{timestamp}}",

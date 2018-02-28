@@ -12,10 +12,12 @@ RUN mkdir -p /root/.ssh
 RUN chmod 700 /root/.ssh
 RUN /bin/echo -e "Host *\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
 
+RUN curl -fsSL get.docker.com -o get-docker.sh && sh get-docker.sh
+# RUN usermod -aG docker admin
+
 WORKDIR /deploy
 ADD main.tf config ./
 ADD scripts scripts/
 ADD ansible ansible/
-# ADD terraform .terraform
 
 ENTRYPOINT [ "/deploy/scripts/run.sh" ]
